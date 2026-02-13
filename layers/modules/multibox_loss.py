@@ -70,6 +70,8 @@ class MultiBoxLoss(nn.Module):
             truths = targets[idx][:, :-1].data
             labels = targets[idx][:, -1].data
             defaults = priors.data
+            if self.use_gpu:
+                defaults = defaults.cuda()
             match(self.threshold, truths, defaults, self.variance, labels,
                   loc_t, conf_t, idx)
         if self.use_gpu:
@@ -94,6 +96,7 @@ class MultiBoxLoss(nn.Module):
         loss_c = log_sum_exp(batch_conf) - batch_conf.gather(1, conf_t.view(-1, 1))
 
         # Hard Negative Mining
+        loss_c = loss_c.view(num, -1)
         loss_c[pos] = 0  # filter out pos boxes for now
         loss_c = loss_c.view(num, -1)
         _, loss_idx = loss_c.sort(1, descending=True)
