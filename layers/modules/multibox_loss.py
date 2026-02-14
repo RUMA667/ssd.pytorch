@@ -114,7 +114,11 @@ class MultiBoxLoss(nn.Module):
 
         # Sum of losses: L(x,c,l,g) = (Lconf(x, c) + αLloc(x,l,g)) / N
 
-        N = num_pos.data.sum()
-        loss_l /= N
-        loss_c /= N
+        N = num_pos.data.sum().float() # Ensure it's a float
+        if N < 1:
+            loss_l = 0  # If no boxes matched, location loss is 0
+            loss_c = 0  # If no boxes matched, confidence loss is 0
+        else:
+            loss_l /= N
+            loss_c /= N
         return loss_l, loss_c
