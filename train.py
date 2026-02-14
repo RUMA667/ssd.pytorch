@@ -184,6 +184,7 @@ def train():
         loss_l, loss_c = criterion(out, targets)
         loss = loss_l + loss_c
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(net.parameters(), max_norm=2.0)
         optimizer.step()
         t1 = time.time()
         loc_loss += loss_l.item()
